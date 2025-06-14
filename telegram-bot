@@ -1,0 +1,41 @@
+import os
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
+from dotenv import load_dotenv
+
+load_dotenv()  # .env ဖိုင်ထဲက variable တွေ load လုပ်ဖို့
+
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+
+# Main menu
+async def show_menu(update, context):
+    keyboard = [
+        [InlineKeyboardButton("📞 Admin နဲ့ဆက်သွယ်မယ်", url="https://t.me/CryptoWith_Evan")],
+        [InlineKeyboardButton("ℹ️ About", callback_data="about")]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    await update.message.reply_text(
+        "🤖 မင်္ဂလာပါ။ LearnWith_Evan Bot မှ ကြိုဆိုပါတယ်။\n\nဖော်ပြထားတဲ့ menu ကို အသုံးပြုနိုင်ပါတယ်။👇",
+        reply_markup=reply_markup
+    )
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await show_menu(update, context)
+
+async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    if query.data == "about":
+        keyboard = [[InlineKeyboardButton("🔙 Back to Menu", callback_data="main_menu")]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        await query.edit_message_text(
+            text="ℹ️ LearnWith_Evan Bot သည် မေးခွန်းများကို ဖြေဆိုပေးသော Q&A Assistant တစ်ခုဖြစ်ပါသည်။",
+            reply_markup=reply_markup
+        )
+    elif query.data == "main_menu":
+        await show_menu(update, context)
+
+app = ApplicationBuilder().token(BOT_TOKEN).build()
+app.add_handler(CommandHandler("start", start))
+app.add_handler(CallbackQueryHandler(button_handler))
+app.run_polling()
